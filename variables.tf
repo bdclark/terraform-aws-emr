@@ -54,6 +54,16 @@ variable "log_uri" {
   default     = ""
 }
 
+variable "iam_service_role_policy" {
+  description = "Inline IAM policy document to attach to EMR service role in lieu of default managed policy"
+  default     = ""
+}
+
+variable "iam_ec2_instance_policy" {
+  description = "Inline IAM policy document to attach to EMR EC2 instance role in lieu of default managed policy"
+  default     = ""
+}
+
 variable "keep_job_flow_alive_when_no_steps" {
   description = "Whether to keep cluster alive when no steps remain"
   default     = true
