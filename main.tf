@@ -12,6 +12,7 @@ resource "aws_emr_cluster" "cluster" {
   configurations                    = "${var.configurations}"
   keep_job_flow_alive_when_no_steps = "${var.keep_job_flow_alive_when_no_steps}"
   security_configuration            = "${var.security_configuration}"
+  autoscaling_role                  = "${aws_iam_role.emr_autoscaling_role.arn}"
 
   ec2_attributes {
     key_name                          = "${var.key_name}"
@@ -78,7 +79,7 @@ module "security_group_rules" {
 }
 
 #
-# IAM resources for EMR service
+# IAM resources for EMR service role
 #
 data "aws_iam_policy_document" "emr_assume_role" {
   statement {
@@ -109,6 +110,35 @@ resource "aws_iam_role_policy_attachment" "emr_service_role" {
   count      = "${length(var.iam_service_role_policy) > 0 ? 0 : 1}"
   role       = "${aws_iam_role.emr_service_role.name}"
   policy_arn = "arn:aws:iam::aws:policy/service-role/AmazonElasticMapReduceRole"
+}
+
+#
+# IAM resources for EMR autoscaling role
+#
+data "aws_iam_policy_document" "emr_autoscaling_assume_role" {
+  statement {
+    effect = "Allow"
+
+    principals {
+      type        = "Service"
+      identifiers = [
+        "application-autoscaling.amazonaws.com",
+        "elasticmapreduce.amazonaws.com"
+      ]
+    }
+
+    actions = ["sts:AssumeRole"]
+  }
+}
+
+resource "aws_iam_role" "emr_autoscaling_role" {
+  name               = "EMR_${var.name}_Autoscaling_Role"
+  assume_role_policy = "${data.aws_iam_policy_document.emr_autoscaling_assume_role.json}"
+}
+
+resource "aws_iam_role_policy_attachment" "emr_autoscaling_role" {
+  role       = "${aws_iam_role.emr_autoscaling_role.name}"
+  policy_arn = "arn:aws:iam::aws:policy/service-role/AmazonElasticMapReduceforAutoScalingRole"
 }
 
 #
