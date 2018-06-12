@@ -11,6 +11,7 @@ resource "aws_emr_cluster" "cluster" {
   log_uri                           = "${var.log_uri}"
   configurations                    = "${var.configurations}"
   keep_job_flow_alive_when_no_steps = "${var.keep_job_flow_alive_when_no_steps}"
+  security_configuration            = "${var.security_configuration}"
 
   ec2_attributes {
     key_name                          = "${var.key_name}"

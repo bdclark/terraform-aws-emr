@@ -54,6 +54,11 @@ variable "log_uri" {
   default     = ""
 }
 
+variable "security_configuration" {
+  description = "Security configuration name to attach to the cluster"
+  default = ""
+}
+
 variable "iam_service_role_policy" {
   description = "Inline IAM policy document to attach to EMR service role in lieu of default managed policy"
   default     = ""
