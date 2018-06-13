@@ -38,6 +38,11 @@ variable "instance_groups" {
 # Optional parameters (with reasonable defaults)
 #------------------------------------------------
 
+variable "ebs_root_volume_size" {
+  description = "Size in GB of the EBS root volume used for each instance"
+  default = 10
+}
+
 variable "configurations" {
   description = "JSON string of configurations to apply during bootstrap"
   default     = ""

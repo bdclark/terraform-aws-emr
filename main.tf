@@ -13,6 +13,7 @@ resource "aws_emr_cluster" "cluster" {
   keep_job_flow_alive_when_no_steps = "${var.keep_job_flow_alive_when_no_steps}"
   security_configuration            = "${var.security_configuration}"
   autoscaling_role                  = "${aws_iam_role.emr_autoscaling_role.arn}"
+  ebs_root_volume_size              = "${var.ebs_root_volume_size}"
 
   ec2_attributes {
     key_name                          = "${var.key_name}"
