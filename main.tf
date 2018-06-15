@@ -4,7 +4,7 @@
 resource "aws_emr_cluster" "cluster" {
   name                              = "${var.name}"
   release_label                     = "${var.release_label}"
-  service_role                      = "${aws_iam_role.emr_service_role.arn}"
+  service_role                      = "${module.iam_roles.service_role_arn}"
   applications                      = "${var.applications}"
   instance_group                    = ["${var.instance_groups}"]
   bootstrap_action                  = ["${var.bootstrap_actions}"]
@@ -12,7 +12,7 @@ resource "aws_emr_cluster" "cluster" {
   configurations                    = "${var.configurations}"
   keep_job_flow_alive_when_no_steps = "${var.keep_job_flow_alive_when_no_steps}"
   security_configuration            = "${var.security_configuration}"
-  autoscaling_role                  = "${aws_iam_role.emr_autoscaling_role.arn}"
+  autoscaling_role                  = "${module.iam_roles.autoscaling_role_arn}"
   ebs_root_volume_size              = "${var.ebs_root_volume_size}"
 
   ec2_attributes {
@@ -23,7 +23,7 @@ resource "aws_emr_cluster" "cluster" {
     additional_master_security_groups = "${join(",", var.additional_master_security_group_ids)}"
     additional_slave_security_groups  = "${join(",", var.additional_slave_security_group_ids)}"
     service_access_security_group     = "${aws_security_group.emr_service_access.id}"
-    instance_profile                  = "${aws_iam_instance_profile.emr_ec2_instance_role.arn}"
+    instance_profile                  = "${module.iam_roles.ec2_instance_role_arn}"
   }
 
   tags = "${merge(map("Name", var.name), var.tags)}"
@@ -80,103 +80,12 @@ module "security_group_rules" {
 }
 
 #
-# IAM resources for EMR service role
+# IAM roles for EMR service, EC2 instances, and AutoScaling
 #
-data "aws_iam_policy_document" "emr_assume_role" {
-  statement {
-    effect = "Allow"
+module "iam_roles" {
+  source = "modules/emr-iam-roles"
 
-    principals {
-      type        = "Service"
-      identifiers = ["elasticmapreduce.amazonaws.com"]
-    }
-
-    actions = ["sts:AssumeRole"]
-  }
-}
-
-resource "aws_iam_role" "emr_service_role" {
-  name               = "EMR_${var.name}_Service_Role"
-  assume_role_policy = "${data.aws_iam_policy_document.emr_assume_role.json}"
-}
-
-resource "aws_iam_role_policy" "emr_service_role" {
-  count       = "${length(var.iam_service_role_policy) > 0 ? 1 : 0}"
-  name_prefix = "EMRServicePolicy"
-  role        = "${aws_iam_role.emr_service_role.id}"
-  policy      = "${var.iam_service_role_policy}"
-}
-
-resource "aws_iam_role_policy_attachment" "emr_service_role" {
-  count      = "${length(var.iam_service_role_policy) > 0 ? 0 : 1}"
-  role       = "${aws_iam_role.emr_service_role.name}"
-  policy_arn = "arn:aws:iam::aws:policy/service-role/AmazonElasticMapReduceRole"
-}
-
-#
-# IAM resources for EMR autoscaling role
-#
-data "aws_iam_policy_document" "emr_autoscaling_assume_role" {
-  statement {
-    effect = "Allow"
-
-    principals {
-      type        = "Service"
-      identifiers = [
-        "application-autoscaling.amazonaws.com",
-        "elasticmapreduce.amazonaws.com"
-      ]
-    }
-
-    actions = ["sts:AssumeRole"]
-  }
-}
-
-resource "aws_iam_role" "emr_autoscaling_role" {
-  name               = "EMR_${var.name}_Autoscaling_Role"
-  assume_role_policy = "${data.aws_iam_policy_document.emr_autoscaling_assume_role.json}"
-}
-
-resource "aws_iam_role_policy_attachment" "emr_autoscaling_role" {
-  role       = "${aws_iam_role.emr_autoscaling_role.name}"
-  policy_arn = "arn:aws:iam::aws:policy/service-role/AmazonElasticMapReduceforAutoScalingRole"
-}
-
-#
-# IAM resources for EMR EC2 instances
-#
-data "aws_iam_policy_document" "ec2_assume_role" {
-  statement {
-    effect = "Allow"
-
-    principals {
-      type        = "Service"
-      identifiers = ["ec2.amazonaws.com"]
-    }
-
-    actions = ["sts:AssumeRole"]
-  }
-}
-
-resource "aws_iam_role" "emr_ec2_instance_role" {
-  name               = "EMR_${var.name}_EC2_Role"
-  assume_role_policy = "${data.aws_iam_policy_document.ec2_assume_role.json}"
-}
-
-resource "aws_iam_role_policy" "ec2_instance_role" {
-  count       = "${length(var.iam_ec2_instance_policy) > 0 ? 1 : 0}"
-  name_prefix = "EMRforEC2Policy"
-  role        = "${aws_iam_role.emr_ec2_instance_role.id}"
-  policy      = "${var.iam_ec2_instance_policy}"
-}
-
-resource "aws_iam_role_policy_attachment" "emr_ec2_instance_role" {
-  count      = "${length(var.iam_ec2_instance_policy) > 0 ? 0 : 1}"
-  role       = "${aws_iam_role.emr_ec2_instance_role.name}"
-  policy_arn = "arn:aws:iam::aws:policy/service-role/AmazonElasticMapReduceforEC2Role"
-}
-
-resource "aws_iam_instance_profile" "emr_ec2_instance_role" {
-  name = "${aws_iam_role.emr_ec2_instance_role.name}"
-  role = "${aws_iam_role.emr_ec2_instance_role.name}"
+  name                     = "${var.name}"
+  service_role_policy      = "${var.service_role_policy}"
+  ec2_instance_role_policy = "${var.ec2_instance_role_policy}"
 }

@@ -40,7 +40,7 @@ variable "instance_groups" {
 
 variable "ebs_root_volume_size" {
   description = "Size in GB of the EBS root volume used for each instance"
-  default = 10
+  default     = 10
 }
 
 variable "configurations" {
@@ -61,15 +61,15 @@ variable "log_uri" {
 
 variable "security_configuration" {
   description = "Security configuration name to attach to the cluster"
-  default = ""
+  default     = ""
 }
 
-variable "iam_service_role_policy" {
+variable "service_role_policy" {
   description = "Inline IAM policy document to attach to EMR service role in lieu of default managed policy"
   default     = ""
 }
 
-variable "iam_ec2_instance_policy" {
+variable "ec2_instance_role_policy" {
   description = "Inline IAM policy document to attach to EMR EC2 instance role in lieu of default managed policy"
   default     = ""
 }
