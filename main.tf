@@ -23,7 +23,7 @@ resource "aws_emr_cluster" "cluster" {
     additional_master_security_groups = "${join(",", var.additional_master_security_group_ids)}"
     additional_slave_security_groups  = "${join(",", var.additional_slave_security_group_ids)}"
     service_access_security_group     = "${aws_security_group.emr_service_access.id}"
-    instance_profile                  = "${module.iam_roles.ec2_instance_role_arn}"
+    instance_profile                  = "${module.iam_roles.ec2_instance_profile_arn}"
   }
 
   tags = "${merge(map("Name", var.name), var.tags)}"

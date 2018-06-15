@@ -28,6 +28,11 @@ output "ec2_instance_role_id" {
   value       = "${aws_iam_role.instance_role.id}"
 }
 
+output "ec2_instance_profile_arn" {
+  description = "EMR IAM EC2 instance role ARN"
+  value       = "${aws_iam_instance_profile.instance_role.arn}"
+}
+
 output "autoscaling_role_arn" {
   description = "EMR IAM AutoScaling role ARN"
   value       = "${aws_iam_role.autoscaling_role.arn}"
