@@ -85,7 +85,9 @@ module "security_group_rules" {
 module "iam_roles" {
   source = "modules/emr-iam-roles"
 
-  name                     = "${var.name}"
-  service_role_policy      = "${var.service_role_policy}"
-  ec2_instance_role_policy = "${var.ec2_instance_role_policy}"
+  name                             = "${var.name}"
+  use_default_service_role_policy  = "${var.use_default_service_role_policy}"
+  use_default_instance_role_policy = "${var.use_default_instance_role_policy}"
+  service_role_policy              = "${var.service_role_policy}"
+  instance_role_policy             = "${var.instance_role_policy}"
 }

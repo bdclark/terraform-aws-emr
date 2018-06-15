@@ -20,14 +20,14 @@ resource "aws_iam_role" "service_role" {
 }
 
 resource "aws_iam_role_policy" "service_role" {
-  count       = "${length(var.service_role_policy) > 0 ? 1 : 0}"
+  count       = "${var.use_default_service_role_policy ? 0 : 1}"
   name_prefix = "EMRServicePolicy"
   role        = "${aws_iam_role.service_role.id}"
   policy      = "${var.service_role_policy}"
 }
 
 resource "aws_iam_role_policy_attachment" "service_role" {
-  count      = "${length(var.service_role_policy) > 0 ? 0 : 1}"
+  count      = "${var.use_default_service_role_policy ? 1 : 0}"
   role       = "${aws_iam_role.service_role.name}"
   policy_arn = "arn:aws:iam::aws:policy/service-role/AmazonElasticMapReduceRole"
 }
@@ -78,25 +78,25 @@ data "aws_iam_policy_document" "ec2_assume_role" {
   }
 }
 
-resource "aws_iam_role" "ec2_instance_role" {
+resource "aws_iam_role" "instance_role" {
   name               = "${var.name}_EMRforEC2Role"
   assume_role_policy = "${data.aws_iam_policy_document.ec2_assume_role.json}"
 }
 
-resource "aws_iam_role_policy" "ec2_instance_role" {
-  count       = "${length(var.ec2_instance_role_policy) > 0 ? 1 : 0}"
+resource "aws_iam_role_policy" "instance_role" {
+  count       = "${var.use_default_instance_role_policy ? 0 : 1}"
   name_prefix = "EMRforEC2Policy"
-  role        = "${aws_iam_role.ec2_instance_role.id}"
-  policy      = "${var.ec2_instance_role_policy}"
+  role        = "${aws_iam_role.instance_role.id}"
+  policy      = "${var.instance_role_policy}"
 }
 
-resource "aws_iam_role_policy_attachment" "ec2_instance_role" {
-  count      = "${length(var.ec2_instance_role_policy) > 0 ? 0 : 1}"
-  role       = "${aws_iam_role.ec2_instance_role.name}"
+resource "aws_iam_role_policy_attachment" "instance_role" {
+  count      = "${var.use_default_instance_role_policy ? 1 : 0}"
+  role       = "${aws_iam_role.instance_role.name}"
   policy_arn = "arn:aws:iam::aws:policy/service-role/AmazonElasticMapReduceforEC2Role"
 }
 
-resource "aws_iam_instance_profile" "ec2_instance_role" {
-  name = "${aws_iam_role.ec2_instance_role.name}"
-  role = "${aws_iam_role.ec2_instance_role.name}"
+resource "aws_iam_instance_profile" "instance_role" {
+  name = "${aws_iam_role.instance_role.name}"
+  role = "${aws_iam_role.instance_role.name}"
 }
